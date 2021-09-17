@@ -20,6 +20,7 @@ function isValidKey(key: string, word: string) {
 function App() {
   const [typedKey, setTypedKeys] = useState([""]);
   const [validKeys, setValidKeys] = useState<Array<string>>([]);
+  const [completedWords, setCompletedWords] = useState<Array<string>>([]);
   const [word, setWord] = useState("");
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -37,13 +38,30 @@ function App() {
         return isNextChar ? [...prev, key] : prev;
       });
     }
-    console.log(key);
   }
 
   useEffect(() => {
     setWord(getWord());
   }, []);
+  useEffect(() => {
+    const wordFromValidKeys = validKeys.join("").toLowerCase();
+    if (word && word === wordFromValidKeys) {
+      //Adicinar word ao completedKeys
 
+      // Buscar uma nova palavra não repetida
+      let newWord = null;
+      do {
+        newWord = getWord();
+      } while (completedWords.includes(newWord));
+      setWord(newWord);
+
+      // Limpar o array validKeys
+      setValidKeys([]);
+
+      //Adicionar word ao completedWords
+      setCompletedWords((prev) => [...prev, word]);
+    }
+  }, [word, validKeys, completedWords]);
   return (
     <div className="container" tabIndex={0} onKeyDown={handleKeyDown}>
       <div className="valid-keys">
@@ -52,9 +70,9 @@ function App() {
       <div className="typed-keys">{typedKey ? typedKey.join(" ") : null}</div>
       <div className="completed-words">
         <ol>
-          <li>cidade</li>
-          <li>carro</li>
-          <li>profissional</li>
+          {completedWords.map((word) => (
+            <li key={word}>{word}</li>
+          ))}
         </ol>
       </div>
     </div>
